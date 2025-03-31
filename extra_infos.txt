@@ -1,0 +1,29 @@
+npm install firebase
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAqU_eVuDQuJQscwcT-LlNPeFeRHBqteb8",
+  authDomain: "saywell-28930.firebaseapp.com",
+  projectId: "saywell-28930",
+  storageBucket: "saywell-28930.firebasestorage.app",
+  messagingSenderId: "144931137875",
+  appId: "1:144931137875:web:a560e98d89170b02c959a6"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+npm install -g firebase-tools
+firebase login
+firebase init
+firebase deploy
+
+
+* Simple Read-Aloud Assistant
+
+1️⃣ User types or pastes text.
+2️⃣ TTS engine converts it to speech (gTTS or Coqui-TTS).
+3️⃣ User listens to the pronunciation and practices.
