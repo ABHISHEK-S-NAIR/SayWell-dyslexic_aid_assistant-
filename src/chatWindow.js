@@ -21,7 +21,6 @@ import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd';
 import ChatMessage from "./chatMessage";
 import { useContext } from "react";
 import AllContext from "./AllContext";
-import axios from 'axios';
 
 function ChatWindow() {
   const {messages, setMessages, input, setInput, prefTeachStyle, age, struggleSyllables, nickname} = useContext(AllContext)
@@ -131,15 +130,23 @@ function ChatWindow() {
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/add-custom-word', {
-        word: wordToAdd,
-        userId: nickname || 'default'
+      const response = await fetch('http://localhost:5000/api/add-custom-word', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          word: wordToAdd,
+          userId: nickname || 'default',
+        }),
       });
+      if (!response.ok) throw new Error('Failed to add custom word');
+      const data = await response.json();
       
-      if (response.data.success) {
+      if (data.success) {
         showSnackbar(`"${wordToAdd}" added to your custom dictionary`, "success");
       } else {
-        showSnackbar(response.data.message || "Failed to add word", "error");
+        showSnackbar(data.message || "Failed to add word", "error");
       }
     } catch (error) {
       console.error("Error adding word:", error);
@@ -177,31 +184,39 @@ function ChatWindow() {
     }
   };
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!input.trim()) return;
   
     setMessages(prevMessages => [...prevMessages, { text: input, sender: "You" }]);
+    const currentInput = input;
     setInput(""); // Clear input field
-  
-    axios.post('http://localhost:5000/api/check-spelling', { 
-      text: input,
-      userId: nickname || 'default',
-      prefTeachStyle: prefTeachStyle,
-      age: age,
-      struggleSyllables: struggleSyllables,
-      nickname: nickname
-    })
-    .then(response => {
-      const botResponse = response.data.corrected_text;
+
+    try {
+      const response = await fetch('http://localhost:5000/api/check-spelling', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: currentInput,
+          userId: nickname || 'default',
+          prefTeachStyle: prefTeachStyle,
+          age: age,
+          struggleSyllables: struggleSyllables,
+          nickname: nickname,
+        }),
+      });
+      if (!response.ok) throw new Error('Failed to check spelling');
+      const data = await response.json();
+      const botResponse = data.corrected_text;
       setMessages(prevMessages => [...prevMessages, { text: botResponse, sender: "Ai" }]);
-    })
-    .catch(error => {
+    } catch (error) {
       console.error('Error:', error);
       setMessages(prevMessages => [...prevMessages, { 
         text: "Sorry, I couldn't process your message. Please try again.", 
         sender: "Ai" 
       }]);
-    });
+    }
   };
 
   return (

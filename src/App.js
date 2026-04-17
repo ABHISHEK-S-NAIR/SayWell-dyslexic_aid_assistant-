@@ -8,7 +8,6 @@ import ChatWindow from './chatWindow';
 import UserProfile from './userProfile';
 import '@fontsource/lexend';
 import '@fontsource/opendyslexic';
-import axios from 'axios';
 import './App.css';
 import AllContext from './AllContext';
 import Signup from './signup';
@@ -31,8 +30,12 @@ function App() {
     try {
       // Here you would typically handle the audio recording
       // For now, we'll just simulate it
-      const response = await axios.post('http://localhost:5000/api/speech-to-text');
-      setText(response.data.text);
+      const response = await fetch('http://localhost:5000/api/speech-to-text', {
+        method: 'POST',
+      });
+      if (!response.ok) throw new Error('Failed to convert speech to text');
+      const data = await response.json();
+      setText(data.text);
     } catch (error) {
       console.error('Error:', error);
     }
@@ -41,8 +44,16 @@ function App() {
 
   const handleTextUpdate = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/api/process-text', { text });
-      setText(() => response.data.updatedText);  // Ensures instant update
+      const response = await fetch('http://localhost:5000/api/process-text', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text }),
+      });
+      if (!response.ok) throw new Error('Failed to process text');
+      const data = await response.json();
+      setText(() => data.updatedText);  // Ensures instant update
     } catch (error) {
       console.error('Error:', error);
     }
@@ -51,7 +62,14 @@ function App() {
 
   const handleTextToSpeech = async () => {
     try {
-      await axios.post('http://localhost:5000/api/text-to-speech', { text });
+      const response = await fetch('http://localhost:5000/api/text-to-speech', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text }),
+      });
+      if (!response.ok) throw new Error('Failed to convert text to speech');
       // Here you would typically play the audio
     } catch (error) {
       console.error('Error:', error);
@@ -60,8 +78,16 @@ function App() {
 
   const checkSpelling = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/api/check-spelling', { text });
-      setFeedback(response.data.analysis);
+      const response = await fetch('http://localhost:5000/api/check-spelling', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text }),
+      });
+      if (!response.ok) throw new Error('Failed to check spelling');
+      const data = await response.json();
+      setFeedback(data.analysis);
     } catch (error) {
       console.error('Error:', error);
     }
